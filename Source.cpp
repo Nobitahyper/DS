@@ -1,76 +1,121 @@
-#include<iostream>
-#include<vector>
-#include<string>
-#include<algorithm>
-#include<fstream>
+#include <iostream>
+#include <string>
 
 using namespace std;
 
-class Freq_counter {
+template <class T>
+class DSLinkedList {
+    /* internal presentation of list node*/
+    struct ListNode {
+        T value;
+        ListNode* next;
+        ListNode(T value1, ListNode* next1 = NULL) {
+            value = value1;   next = next1;
+        }
+    };
+    ListNode* head; // List head pointer
+    ListNode* tail;
 public:
-	string word;
-	int count;
+    DSLinkedList() {
+        head = NULL;
+        tail = NULL;
+    }
+    void append(T val) {
+       ListNode* newNode = new ListNode(val);
+        if (head == NULL) {
+            head = newNode;
+            tail = newNode;
+        }
+        else {
+            tail->next = newNode;
+            tail = newNode;
+        }
+    }
+    void prepend(T val) {
+        ListNode* tp = new ListNode(val);
+        tp->value = val;
+        tp->next = head;
+        head = tp;
+    }
+    
+    bool find(T needle) {
+        ListNode* tp = head;
+        while (tp != NULL)
+        {
+         if (tp->value == needle) return true;
+         tp = tp->next;
+        }
+        return false;
+    }
+    bool remove(T element) {
+        ListNode* nodeptr, * prevnodeptr = head;
+        
+        if (head->value == element) {
+            nodeptr = head;
+            head = head->next;
+            delete nodeptr;
+            return true;
+        }
+        else
+        {
+            nodeptr = head;
+            while (nodeptr != nullptr && nodeptr->value != element)
+            {
+                prevnodeptr = nodeptr;
+                nodeptr = nodeptr->next;
+            }
+            if (nodeptr) {
+                prevnodeptr->next = nodeptr->next;
+                delete nodeptr;
+                return true;
+            }
+        }
+        return false;
+    }
 
-	bool operator < (const Freq_counter& check) const
-	{
-		return (count < check.count);
-	}
+    void print() {
+        ListNode* tp = head;
+        while (tp != NULL) {
+            cout << tp->value << "\n";
+            tp = tp->next;
+        }
+    }
+    unsigned int numelements() {
+        int count = 0;
+        ListNode* current = head;
+        while (current != NULL)
+        {
+            count++;
+            current = current->next;
+        }
+        return count;
+    }
+    ~DSLinkedList() {
+        cout << "Destructor called\n";
+        ListNode* tmp = head;
+        ListNode* prev;
+        while (tmp) {
+            prev = tmp;
+            tmp = tmp->next;
+            delete prev;
+        }
+    }
 };
 
-string to_lower(string str)
-{
-	for (char& c : str) c = tolower(c);
-	return str;
+int main() {
+    DSLinkedList<int> myll;
+    myll.append(1);
+    myll.append(2);
+    myll.append(3);
+    myll.prepend(4);
+    myll.print();
+    cout << "The number of elements in the list are " << myll.numelements() << endl;
+    if (myll.find(1)) cout << "Found 1\n";
+    if (!myll.find(1)) cout << "Not Found 1\n";
+    if(myll.remove(1)) cout << "Deleted 1\n";
+    if (!myll.find(100)) cout << "Not deleted 100\n";
+    myll.print();
+    cout << "The number of elements in the list are " << myll.numelements() << endl;
+    system("pause");
+    return 0;
 }
-
-int main(int argc, char** args) {
-	if (argc != 2) {
-		cout << "No!\n";
-		return 1;
-	}
-	string fname = args[1];
-	cout << "You want file: " << fname << "\n";
-	ifstream input(fname);
-	if (!(input.is_open())) { cout << "No\n"; return 1; }
-	vector <Freq_counter> topten;
-	vector <string> result;
-	string word;
-	Freq_counter obj;
-	while (input >> word) {
-		result.push_back(to_lower(word));
-	}
-
-	sort(result.begin(), result.end());
-	int curr_count = 1;
-	int max_count = 1;
-	for (int i = 1; i < result.size(); i++) {
-		if (result[i] == result[i - 1]) ++curr_count;
-		else
-		{
-			obj.word = result[i - 1];
-			obj.count = curr_count;
-			topten.push_back(obj);
-			curr_count = 1;
-		}
-	}
-
-	if (curr_count > max_count)
-	{
-		obj.word = result[result.size()];
-		obj.count = curr_count;
-		topten.push_back(obj);
-	}
-	sort(topten.begin(), topten.end());
-	reverse(topten.begin(), topten.end());
-
-	cout << "Top 10 frequent words are: " << endl;
-
-	for (int i = 0; i < 10; i++)
-	{
-		cout << i + 1 << ". " << topten[i].word << " : " << topten[i].count << endl;
-	}
-
-	system("pause");
-	return 0;
-}
-
